@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPYDER CRASH — Comic Store</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@500;700;900&display=swap');
+*{box-sizing:border-box}body{margin:0;background:#101014;color:#fff;font-family:Nunito,sans-serif}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.1;background-image:radial-gradient(#fff 1px,transparent 1px);background-size:9px 9px}
+header{position:sticky;top:0;z-index:5;background:#17171d;border-bottom:4px solid #000;box-shadow:0 5px #000}
+nav{max-width:1150px;margin:auto;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+.logo{font:42px Bangers;letter-spacing:2px;text-shadow:4px 4px #000;color:#ff3158}.logo span{color:#52a7ff}
+.btn{border:3px solid #000;border-radius:10px;padding:10px 15px;font-weight:900;cursor:pointer;box-shadow:3px 3px #000;background:#ffd52e;color:#000}
+.hero{max-width:1150px;margin:30px auto;padding:45px 25px;border:5px solid #000;border-radius:25px;background:linear-gradient(135deg,#e9234d,#702cff);box-shadow:9px 9px #000}
+h1{font:76px Bangers;margin:0;text-shadow:6px 6px #000}.hero p{max-width:600px;font-size:18px;font-weight:800}
+.wrap{max-width:1150px;margin:auto;padding:0 20px 50px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+h2{font:40px Bangers;margin:20px 0}.search{padding:12px;border:3px solid #000;border-radius:10px;font-weight:800;min-width:240px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:22px}.card{background:#202027;border:4px solid #000;border-radius:18px;overflow:hidden;box-shadow:6px 6px #000}
+.card img{width:100%;height:190px;object-fit:cover;border-bottom:4px solid #000;background:#30303a}.body{padding:15px}.sale{display:inline-block;background:#ff3158;border:2px solid #000;padding:4px 8px;border-radius:7px;font-weight:900;font-size:12px}
+.price{font-size:22px;color:#55e39b;font-weight:900}.old{text-decoration:line-through;color:#888;font-size:13px;margin-left:5px}
+.buy{width:100%;margin-top:12px;background:#52a7ff}.cart{position:fixed;right:18px;bottom:18px;background:#ffd52e;font-size:25px;width:65px;height:65px;border-radius:50%;z-index:10}
+.modal{display:none;position:fixed;inset:0;background:#000c;z-index:20;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.box{background:#202027;border:5px solid #000;border-radius:18px;padding:22px;width:min(520px,100%);max-height:90vh;overflow:auto;box-shadow:8px 8px #000}
+.item{padding:12px 0;border-bottom:2px dashed #555;display:flex;justify-content:space-between;gap:8px}.empty{text-align:center;padding:40px;color:#aaa}
+input,textarea{width:100%;padding:11px;border:3px solid #000;border-radius:9px;font-weight:700;margin:5px 0}
+
+.stockDash{max-width:1150px;margin:25px auto 10px;padding:0 20px}
+.stockHead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.stockTitle{font:48px Bangers;margin:10px 0;text-shadow:4px 4px #000}
+.stockSub{color:#aaa;font-weight:800;margin-top:-5px}
+.stockStats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}
+.stockStat{background:#202027;border:4px solid #000;border-radius:16px;padding:16px;box-shadow:5px 5px #000}
+.stockStat b{display:block;font:34px Bangers;color:#55e39b;text-shadow:2px 2px #000}
+.stockStat span{font-weight:900;color:#ddd}
+.stockList{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+.stockCard{background:#202027;border:4px solid #000;border-radius:16px;padding:15px;box-shadow:5px 5px #000}
+.stockRow{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.stockName{font-weight:900;font-size:18px}
+.stockNumber{font:34px Bangers;color:#52a7ff;text-shadow:2px 2px #000}
+.stockBar{height:12px;background:#111;border:2px solid #000;border-radius:20px;overflow:hidden;margin-top:10px}
+.stockFill{height:100%;background:#55e39b}
+.stockFill.low{background:#ffd52e}.stockFill.empty{background:#ff3158}
+.stockBadge{display:inline-block;padding:4px 8px;border:2px solid #000;border-radius:7px;font-size:11px;font-weight:900;background:#55e39b;color:#000}
+.stockBadge.low{background:#ffd52e}.stockBadge.empty{background:#ff3158;color:#fff}
+@media(max-width:700px){.stockStats{grid-template-columns:repeat(2,1fr)}.stockTitle{font-size:40px}}
+
+.adminPanel{display:none;background:#202027;border:4px solid #000;border-radius:18px;padding:20px;margin:20px auto;max-width:1150px;box-shadow:7px 7px #000}
+.adminPanel.show{display:block}.adminGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.adminProduct{border-top:2px dashed #555;padding:14px 0;display:grid;grid-template-columns:80px 1fr auto;gap:12px;align-items:center}.adminProduct img{width:80px;height:65px;object-fit:cover;border:3px solid #000;border-radius:7px}
+@media(max-width:600px){h1{font-size:52px}.logo{font-size:32px}.adminProduct{grid-template-columns:60px 1fr}.adminProduct .actions{grid-column:1/-1}}
+</style>
+
+<style>
+#loginGate{position:fixed;inset:0;z-index:99999;background:radial-gradient(circle at top,#262632,#090a0f 65%);display:none;align-items:center;justify-content:center;padding:20px}
+.loginBox{width:min(430px,100%);background:#191a20;border:4px solid #000;border-radius:24px;padding:28px;box-shadow:9px 9px #000}
+.loginLogo{font:52px Bangers;text-align:center;margin-bottom:3px}
+.loginLogo .red{color:#ff3158}.loginLogo .blue{color:#52a7ff}
+.loginSub{text-align:center;color:#aaa;font-weight:800;margin-bottom:22px}
+.loginInput{width:100%;box-sizing:border-box;border:3px solid #000;border-radius:12px;padding:14px;margin:7px 0;background:#fff;color:#111;font-size:16px;font-weight:700}
+.loginBtn{width:100%;border:3px solid #000;border-radius:13px;padding:14px;background:#ffd52e;color:#111;font-weight:900;font-size:16px;cursor:pointer;box-shadow:4px 4px #000;margin-top:8px}
+#loginError{color:#ff5574;font-weight:900;text-align:center;min-height:20px;margin-top:10px}
+</style>
+
+<style>
+.stockDash{background:linear-gradient(145deg,#171820,#0d0e13);border:4px solid #000;border-radius:24px;padding:22px;box-shadow:8px 8px #000}
+.stockTitle{letter-spacing:1px}
+.stockStat{background:linear-gradient(145deg,#25262e,#17181e);transition:.2s}
+.stockStat:hover,.stockCard:hover{transform:translateY(-3px)}
+.stockCard{background:linear-gradient(145deg,#24252c,#15161c)}
+</style>
+</head>
+<body>
+
+<div id="loginGate">
+  <div class="loginBox">
+    <div class="loginLogo"><span class="red">SPYDER</span> <span class="blue">CRASH</span></div>
+    <div class="loginSub">MASUK SEBAGAI ADMIN</div>
+    <input id="adminIdentity" class="loginInput" type="text" placeholder="Username Admin">
+    <input id="adminPassword" class="loginInput" type="password" placeholder="Password Admin">
+    <button class="loginBtn" onclick="doAdminLogin()">MASUK ADMIN</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<header><nav>
+<div class="logo">SPYDER <span>CRASH</span></div>
+<div style="display:flex;gap:8px;align-items:center">
+<button class="btn" style="background:#52a7ff" onclick="showStock()">📦 STOCK</button>
+<button id="adminBtn" class="btn" onclick="openAdminLogin()">🔐 ADMIN</button>
+</div>
+</nav></header>
+
+<section class="hero">
+<h1>SPYDER CRASH!</h1>
+<p>MARKETPLACE AKUN DENGAN STYLE COMIC. PILIH PRODUK FAVORITMU DAN CHECKOUT DENGAN MUDAH.</p>
+</section>
+
+<section id="adminPanel" class="adminPanel">
+<h2>🕷️ COMIC ADMIN PANEL</h2>
+<div class="adminGrid">
+<input id="pName" placeholder="Nama produk">
+<input id="pPrice" type="number" placeholder="Harga">
+<input id="pDiscount" type="number" placeholder="Diskon %">
+<input id="pStock" type="number" placeholder="Stok">
+</div>
+<textarea id="pDesc" placeholder="Deskripsi produk"></textarea>
+<input id="pImage" type="file" accept="image/*">
+<button class="btn" style="background:#55e39b" onclick="saveProduct()">💾 SIMPAN PRODUK</button>
+<button class="btn" style="background:#ff3158" onclick="adminLogout()">KELUAR</button>
+<h2>📦 DAFTAR PRODUK</h2>
+<div id="adminProducts"></div>
+</section>
+
+<section id="stockDash" class="stockDash">
+  <div class="stockHead">
+    <div>
+      <div class="stockTitle">📦 STOCK DASHBOARD</div>
+      <div class="stockSub">Pantau stok akun SPYDER CRASH secara cepat.</div>
+    </div>
+    <button class="btn" style="background:#55e39b" onclick="renderStock()">↻ REFRESH STOCK</button>
+  </div>
+  <div class="stockStats">
+    <div class="stockStat"><b id="stockProductCount">0</b><span>JENIS PRODUK</span></div>
+    <div class="stockStat"><b id="stockTotal">0</b><span>TOTAL STOK</span></div>
+    <div class="stockStat"><b id="stockLow">0</b><span>STOK MENIPIS</span></div>
+    <div class="stockStat"><b id="stockEmpty">0</b><span>STOK HABIS</span></div>
+  </div>
+  <div id="stockList" class="stockList"></div>
+</section>
+
+<div class="wrap">
+<div class="top"><h2>🔥 PRODUK TERSEDIA</h2><input id="search" class="search" placeholder="🔎 Cari akun..." oninput="render()"></div>
+<div id="products" class="grid"></div>
+</div>
+
+<button class="btn cart" onclick="openCart()">🛒</button>
+
+<div id="cartModal" class="modal">
+<div class="box">
+<h2>🛒 KERANJANG</h2>
+<div id="items"></div>
+<h3 id="total"></h3>
+<button class="btn buy" onclick="checkout()">💳 CHECKOUT WHATSAPP</button>
+<button class="btn" style="width:100%;margin-top:10px;background:#ff3158" onclick="closeCart()">TUTUP</button>
+</div>
+</div>
+
+<script>
+const ADMIN_USERNAME = "admin";
+const ADMIN_PASSWORD = "GantiPassword123!";
+const WHATSAPP = "62882016477541";
+
+let products = JSON.parse(localStorage.getItem("spyder_products_v2") || "null");
+let cart = [];
+let editId = null;
+
+if (!products) {
+  products = [
+    {id:Date.now(),name:"SPYDER CRASH PREMIUM",price:80000,discount:10,stock:5,image:"",description:"Akun premium SPYDER CRASH."},
+    {id:Date.now()+1,name:"SPYDER CRASH VIP",price:120000,discount:15,stock:3,image:"",description:"Akun VIP SPYDER CRASH."}
+  ];
+  save();
+}
+
+function save(){localStorage.setItem("spyder_products_v2",JSON.stringify(products))}
+function parseHarga(value){
+  const s = String(value ?? "").replace(/Rp/gi,"").replace(/\s/g,"").replace(/\./g,"").replace(/,/g,"");
+  return Math.max(0, Math.round(Number(s) || 0));
+}
+function rupiah(n){
+  const value = Math.round(Number(n) || 0);
+  return "Rp " + value.toLocaleString("id-ID");
+}
+function finalPrice(p){return p.price - (p.price * p.discount / 100)}
+function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+function isAdmin(){
+  return sessionStorage.getItem("spyder_is_admin") === "yes";
+}
+
+function render(){
+  const q = document.getElementById("search").value.toLowerCase();
+  const data = products.filter(p => p.name.toLowerCase().includes(q));
+  document.getElementById("products").innerHTML = data.length ? data.map(p => `
+  <div class="card">
+    <img src="${p.image||"https://placehold.co/600x400/202027/fff?text=SPYDER+CRASH"}">
+    <div class="body">
+      ${p.discount ? `<span class="sale">-${p.discount}% SALE</span>` : ""}
+      <h3>${esc(p.name)}</h3>
+      <div class="price">${rupiah(finalPrice(p))}${p.discount ? ` <span class="old">${rupiah(p.price)}</span>` : ""}</div>
+      <small>📦 Stok: ${p.stock}</small>
+      <button class="btn buy" onclick="addCart(${p.id})" ${p.stock < 1 ? "disabled" : ""}>${p.stock < 1 ? "STOK HABIS" : "🛒 BELI"}</button>
+    </div>
+  </div>`).join("") : `<div class="empty">Produk tidak ditemukan.</div>`;
+  
+  if (isAdmin()) {
+    document.getElementById("adminPanel").classList.add("show");
+    renderAdmin();
+  } else {
+    document.getElementById("adminPanel").classList.remove("show");
+  }
+  renderStock();
+}
+
+function renderAdmin(){
+  document.getElementById("adminProducts").innerHTML = products.map(p => `
+  <div class="adminProduct">
+    <img src="${p.image||"https://placehold.co/200x160/202027/fff?text=NO+IMAGE"}">
+    <div><b>${esc(p.name)}</b><br>${rupiah(finalPrice(p))} · Diskon ${p.discount}% · Stok ${p.stock}</div>
+    <div class="actions">
+      <button class="btn" onclick="editProduct(${p.id})">EDIT</button>
+      <button class="btn" style="background:#ff3158" onclick="deleteProduct(${p.id})">HAPUS</button>
+    </div>
+  </div>`).join("") || "<p>Belum ada produk.</p>";
+}
+
+function saveProduct(){
+  if (!isAdmin()) return alert("Hanya admin yang bisa menambah produk!");
+  const name = document.getElementById("pName").value.trim();
+  const price = parseHarga(document.getElementById("pPrice").value);
+  const discount = Math.max(0, Math.min(100, Number(document.getElementById("pDiscount").value || 0)));
+  const stock = Math.max(0, Math.floor(Number(document.getElementById("pStock").value || 0)));
+  const desc = document.getElementById("pDesc").value.trim();
+  const file = document.getElementById("pImage").files[0];
+  if (!name || !Number.isFinite(price)) { alert("Nama dan harga wajib diisi."); return; }
+
+  function finish(image){
+    if (editId) {
+      const p = products.find(x => x.id === editId);
+      p.name = name; p.price = price; p.discount = discount; p.stock = stock; p.description = desc;
+      if (image) p.image = image;
+    } else {
+      products.unshift({id:Date.now(),name,price,discount,stock,image:image||"",description:desc});
+    }
+    save(); clearForm(); render(); alert("Produk berhasil disimpan.");
+  }
+  if (file) {
+    const r = new FileReader();
+    r.onload = e => finish(e.target.result);
+    r.readAsDataURL(file);
+  } else finish("");
+}
+
+function editProduct(id){
+  if (!isAdmin()) return;
+  const p = products.find(x => x.id === id); if (!p) return;
+  editId = id;
+  document.getElementById("pName").value = p.name;
+  document.getElementById("pPrice").value = p.price;
+  document.getElementById("pDiscount").value = p.discount;
+  document.getElementById("pStock").value = p.stock;
+  document.getElementById("pDesc").value = p.description || "";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function deleteProduct(id){
+  if (!isAdmin()) return;
+  if (!confirm("Hapus produk ini?")) return;
+  products = products.filter(p => p.id !== id); save(); render();
+}
+
+function clearForm(){
+  editId = null;
+  ["pName","pPrice","pDiscount","pStock","pDesc"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("pImage").value = "";
+}
+
+function addCart(id){
+  const p = products.find(x => x.id === id); if (!p || p.stock < 1) return;
+  const x = cart.find(x => x.id === id);
+  if (x) { if (x.qty >= p.stock) return alert("Stok tidak cukup."); x.qty++; }
+  else cart.push({...p, qty:1});
+  openCart();
+}
+
+function openCart(){document.getElementById("cartModal").classList.add("show"); renderCart()}
+function closeCart(){document.getElementById("cartModal").classList.remove("show")}
+function renderCart(){
+  let total = 0;
+  document.getElementById("items").innerHTML = cart.length ? cart.map(x => {
+    total += finalPrice(x) * x.qty;
+    return `<div class="item"><span><b>${esc(x.name)}</b><br>${x.qty} × ${rupiah(finalPrice(x))}</span>
+    <button class="btn" onclick="removeCart(${x.id})">×</button></div>`;
+  }).join("") : `<div class="empty">Keranjang kosong.</div>`;
+  document.getElementById("total").textContent = cart.length ? "TOTAL: " + rupiah(total) : "";
+}
+function removeCart(id){cart = cart.filter(x => x.id !== id); renderCart()}
+function checkout(){
+  if (!cart.length) return alert("Keranjang masih kosong.");
+  let total = cart.reduce((s,x) => s + finalPrice(x) * x.qty, 0);
+  let text = `Halo Admin SPYDER CRASH!
+
+Saya ingin membeli:
+${cart.map(x => "- " + x.name + " (" + x.qty + "x)").join("\n")}
+
+Total: ${rupiah(total)}
+
+Mohon informasi pembayaran.`;
+  window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(text), "_blank");
+}
+
+function showStock(){
+  document.getElementById("stockDash").scrollIntoView({behavior:"smooth",block:"start"});
+  renderStock();
+}
+function renderStock(){
+  const total = products.reduce((s,p) => s + Math.max(0, Number(p.stock) || 0), 0);
+  const low = products.filter(p => Number(p.stock) > 0 && Number(p.stock) <= 3).length;
+  const empty = products.filter(p => Number(p.stock) <= 0).length;
+  document.getElementById("stockProductCount").textContent = products.length;
+  document.getElementById("stockTotal").textContent = total.toLocaleString("id-ID");
+  document.getElementById("stockLow").textContent = low;
+  document.getElementById("stockEmpty").textContent = empty;
+  document.getElementById("stockList").innerHTML = products.length ? products.map(p => {
+    const stock = Math.max(0, Number(p.stock) || 0);
+    const maxStock = Math.max(10, stock);
+    const percent = Math.min(100, Math.round((stock / maxStock) * 100));
+    const status = stock <= 0 ? "HABIS" : stock <= 3 ? "MENIPIS" : "TERSEDIA";
+    const cls = stock <= 0 ? "empty" : stock <= 3 ? "low" : "";
+    return `<div class="stockCard">
+      <div class="stockRow">
+        <div class="stockName">${esc(p.name)}</div>
+        <span class="stockBadge ${cls}">${status}</span>
+      </div>
+      <div class="stockRow" style="margin-top:8px">
+        <span>Stok tersedia</span>
+        <span class="stockNumber">${stock}</span>
+      </div>
+      <div class="stockBar"><div class="stockFill ${cls}" style="width:${percent}%"></div></div>
+      <div style="margin-top:10px;color:#aaa;font-size:13px">${rupiah(finalPrice(p))} / akun</div>
+    </div>`;
+  }).join("") : '<div class="empty">Belum ada produk.</div>';
+}
+
+// === ADMIN LOGIN ===
+function openAdminLogin(){
+  if (isAdmin()) return;
+  document.getElementById("loginGate").style.display = "flex";
+}
+
+function doAdminLogin(){
+  const user = document.getElementById("adminIdentity").value.trim();
+  const pass = document.getElementById("adminPassword").value;
+  if (user === ADMIN_USERNAME && pass === ADMIN_PASSWORD) {
+    sessionStorage.setItem("spyder_is_admin", "yes");
+    document.getElementById("loginGate").style.display = "none";
+    document.getElementById("adminBtn").textContent = "⚙ ADMIN";
+    render();
+  } else {
+    document.getElementById("loginError").textContent = "❌ Login salah!";
+  }
+}
+
+function adminLogout(){
+  sessionStorage.removeItem("spyder_is_admin");
+  document.getElementById("adminBtn").textContent = "🔐 ADMIN";
+  render();
+}
+
+// Cek status saat buka halaman
+document.addEventListener("DOMContentLoaded", () => {
+  if (isAdmin()) {
+    document.getElementById("adminBtn").textContent = "⚙ ADMIN";
+  }
+  render();
+});
+</script>
+
+</body>
+</html>
